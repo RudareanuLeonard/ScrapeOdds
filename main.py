@@ -3,6 +3,11 @@ from selenium.webdriver.common.by import By
 import time
 import re
 
+
+#I COULD USE A CLASS TO STORE country-leagues-matches-typeofbets BETTER... TO DO for later
+
+
+
 SITE = "https://www.oddsportal.com/"
 SITE_FOOTBALL = "https://www.oddsportal.com/football/"
 
@@ -10,9 +15,6 @@ SITE_FOOTBALL = "https://www.oddsportal.com/football/"
 def get_football_countries():
     driver = webdriver.Chrome() #chrome webdriver
     driver.get(SITE_FOOTBALL)
-    # print(f"DRIVER = {type(driver)}")
-    # DRIVER = <class 'selenium.webdriver.chrome.webdriver.WebDriver'>
-    # driver.fullscreen_window()
     driver.execute_script("document.body.style.zoom='10%'")
 
     time.sleep(10)
@@ -38,6 +40,11 @@ def transform_league_to_text(league):
 
     return league
 
+def transform_league_to_url(league):
+    league = league.lower()
+    league = league.replace(" ", "-")
+
+    return league
 
 def get_football_data():
 
@@ -45,24 +52,27 @@ def get_football_data():
 
     country_leagues = {}
     
+    cnt = 0
 
     driver = call_get_football_countries[0]
     get_countries = call_get_football_countries[1] #i need to use he ".text"
-
 
     country_to_url = []
 
     for country in get_countries: #modify country string so i can add it to the xpath string
         country_to_url.append(transform_country_to_url(country.text))
 
-    for i in range (0, len(get_countries)): #for it to can be clicked it needs to be "visible" - so my solution was to zoom out the page
+    for i in range (2, 5): #for it to can be clicked it needs to be "visible" - so my solution was to zoom out the page          #4,5 - for test on a few leagues
         country = get_countries[i] #webelement
         country_url = country_to_url[i]
 
-        # print(f"country = {len(country.text)}")
+        # print(f"country to url = {country_to_url}")
+
         #for each country we have one or more leagues
         leagues = []
         country_text = country.text
+
+
 
         try:
             country.click()
@@ -74,30 +84,85 @@ def get_football_data():
             find_leagues = driver.find_elements(By.XPATH, xpath)
 
             for el in find_leagues:
-                # print(f"country = {country_text}")
-                league = transform_league_to_text(el.text)
-                leagues.append(league)
-                # print(f"league = {league}")
+                league = el # put webelements here so i can access it in another merthod
+                # print(f"league = {league.text}")
+                league_text = transform_league_to_text(el.text)
+                print()
+                print()
+                print(f"league text = {league_text} and tpye league text = {type(league_text)}")
+                print()
+                print()
+                league_url = transform_league_to_url(league_text)
+
+                time.sleep(8)
+                league.click()
 
 
-            # print(f"country = {country.text} and leagues = {leagues}")
+                print(f"counrty to url val = {country_url} type = {type(country_url)}")
+                print()
+                print()
+                print(f"league url type = {type(league_url)}")
+                print()
+                print()
+
+
+                time.sleep(5)
+
+                move_to_match(driver,country_url,league_url)
+
+
+                time.sleep(1000)
+                driver.back()
+                leagues.append(league.text)
 
             country_leagues[country_text] = leagues
 
             
-            time.sleep(5)
+            # print(f"country_leagues = {country_leagues}")
 
-            print(f"current dictionary:")
-            print(country_leagues)
+            time.sleep(5)
+            
             driver.back()
         except Exception as e:
-            print(f"error = {e}")
+            print(f"get_football_data ERROR = {e}")
+
+    print(country_leagues)
+
+    # driver.quit()
+
+    return driver, country_leagues
 
 
+def move_to_match(driver, country, league):
 
+    try:
+        # xpath = '//div/a[contains(@href, "football/' + country + '/' + league + '/")]'
+        xpath = f'//div/a[contains(@href, "football/{country}/{league}/")]/div/div/div/div/a/div/p'
+        
+        get_matches = driver.find_elements(By.XPATH, xpath)
 
-    driver.quit()
+        print()
+        print()
+        print("aaaaaaaaaaaaaaaa")
+        print()
+        print()
+        for match in get_matches:
+            print(f"get_matches =  {match.text}")
+        print()
+        print()
+        print(f"END METHOD")
+    except Exception as e:
+        print(f"move_to_match error = {e}")
+    
+        
 
 if __name__ == "__main__":
+    # get_league_matches()
+
     get_football_data()
-    # print(transform_league_to_text("League 1 (12)"))
+
+    # d = {1: [2,3,4],
+    #      2: [2,34,1234]}
+    
+    # for i in d:
+    #     print(d[i])
