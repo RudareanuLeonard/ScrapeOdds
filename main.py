@@ -85,23 +85,26 @@ def get_football_data():
 
             for el in find_leagues:
                 league = el # put webelements here so i can access it in another merthod
-                # print(f"league = {league.text}")
+
+               
+                print(f"league = {el.text}")
                 league_text = transform_league_to_text(el.text)
                 print()
-                print()
-                print(f"league text = {league_text} and tpye league text = {type(league_text)}")
+                # print()
+                # print(f"league text = {league_text} and tpye league text = {type(league_text)}")
                 print()
                 print()
                 league_url = transform_league_to_url(league_text)
 
                 time.sleep(8)
+                
                 league.click()
 
 
-                print(f"counrty to url val = {country_url} type = {type(country_url)}")
-                print()
-                print()
-                print(f"league url type = {type(league_url)}")
+                # print(f"counrty to url val = {country_url} type = {type(country_url)}")
+                # print()
+                # print()
+                # print(f"league url type = {type(league_url)}")
                 print()
                 print()
 
@@ -135,34 +138,54 @@ def get_football_data():
 
 def move_to_match(driver, country, league):
 
+    ##########
+
+    #so, to move to a match, we need to press on a href that looks something like: football/country/league/home_team_formatted-away_team_formatted-somecode/
+
+    ##########
+    
+
+
     try:
-        # xpath = '//div/a[contains(@href, "football/' + country + '/' + league + '/")]'
-        xpath = f'//div/a[contains(@href, "football/{country}/{league}/")]/div/div/div/div/a/div/p'
+        text_after = ".+"
+        # xpath = '//a[contains(@href, "football/' + country + '/' + league + '/' + text_after +'/")]' - close one
+        xpath = '//a[contains(@href, "football/' + country + '/' + league +'/")]'
+        # xpath = f'//div/a[contains(@href, "football/{country}/{league}/")]' - ???
+        # xpath = 'a[contains(@href, "football/algeria/ligue-1/oran-cr-belouizdad-lK3qJL2A/")]' #i suppose we get algeria...
         
+        print(f"xpath = {xpath}")
+
         get_matches = driver.find_elements(By.XPATH, xpath)
 
+        time.sleep(5)
         print()
         print()
-        print("aaaaaaaaaaaaaaaa")
-        print()
-        print()
-        for match in get_matches:
-            print(f"get_matches =  {match.text}")
+        
+        for i in range(4, len(get_matches) - 2):
+            match = get_matches[i]
+            text = match.text
+            print(f"text = {text}")
+            # if i != 2 and i != 3:
+            #     try:
+            #         match.click()
+            #         time.sleep(5)
+            #         driver.back()
+            #     except:
+            #         print("Click not worked")
+            # # else:
+            #     print(" I = 2")
+
+
+
+        # for match in get_matches:
+        #     print(f"get_matches =  {match.text}")
         print()
         print()
         print(f"END METHOD")
     except Exception as e:
-        print(f"move_to_match error = {e}")
+        print(f"move_to_match error = {e}")  
     
         
 
 if __name__ == "__main__":
-    # get_league_matches()
-
     get_football_data()
-
-    # d = {1: [2,3,4],
-    #      2: [2,34,1234]}
-    
-    # for i in d:
-    #     print(d[i])
