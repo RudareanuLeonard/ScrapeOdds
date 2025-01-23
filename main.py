@@ -149,13 +149,13 @@ def get_football_data():
 
 
 
-            time.sleep(5)
+            time.sleep(500)
             
             driver.back()
         except Exception as e:
             print(f"get_football_data ERROR = {e}")
 
-    print(country_leagues)
+    # print(country_leagues)
 
     # driver.quit()
 
@@ -176,7 +176,7 @@ def get_matches_info(driver, country, league): #what matches are, results, stand
        
         xpath = '//a[contains(@href, "football/' + country + '/' + league +'/")]'
 
-        print(f"xpath = {xpath}")
+        # print(f"xpath = {xpath}")
 
         get_matches = driver.find_elements(By.XPATH, xpath)
 
@@ -222,7 +222,7 @@ def get_match_info(driver, match):
     
 
     general_xpath = '//ul/li/span'
-    print(f"general xpath = {general_xpath}")
+    # print(f"general xpath = {general_xpath}")
 
     all_types_of_bets = []
 
@@ -230,54 +230,86 @@ def get_match_info(driver, match):
 
     i = 0
 
-    # for i in find_types:
-    #     if i.text != '':
-    #         print(i.text)
-    #         print()
 
     while find_types[i].text != '': #get type of bets but without whats on "more" button
         type = find_types[i]
         all_types_of_bets.append(type)
-        # print()
-        # print(f"type in all type = {type.text}")
-        # print()
         i = i + 1
 
-    # print(f"all types = {all_types_of_bets}")
+    ###
+        #so we get the "visible" elements here
+    ###
 
-    # hidden_xpath = '//ul[contains(@class, "hidden-links no-scrollbar links-invisible")]/li/span/div'
+    # now we go through each type and try to retreive the odds:
+    for bet_type in all_types_of_bets:
+        get_1x2_odds(driver)
 
 
+    
+    time.sleep(100)
     ##################
         #the list from "more" is hidden so i need to remove the attribute that hides it... that's what im doing here
     ##################
     ul_element = driver.find_element(By.XPATH, "//ul[contains(@class, 'hidden-links')]")
     driver.execute_script("arguments[0].classList.remove('links-invisible');", ul_element) #remove what hides the list
-    # print()
-    # print()
-    # print()
-    # updated_class = ul_element.get_attribute("class")
-    # print(f"Updated class: {updated_class}")
+
     time.sleep(2)
 
     hidden_xpath = ul_element.find_elements(By.XPATH, "./li/span")
     for type in hidden_xpath:
-        # print(f"element = {type.text}")
+        type.click()
+        time.sleep(12)
+        print(f"element = {type.text}")
         all_types_of_bets.append(type)
 
 
 
+def get_1x2_odds(driver):
+    xpath_all_odds = '//div/div/div/p'
 
-    # # Locate the <li> elements within the <ul>
-    # li_elements = ul_element.find_elements(By.XPATH, "./li")
+    all_elements = driver.find_elements(By.XPATH, xpath_all_odds)
+    # get_home_odds = driver.find_elements(By.CSS_SELECTOR, "[data-v-10e18331]") ------ IT RETURNS BETTER RESULTS, BUT WHAT IF THE CHANGES the data-v... ? so i ll use the previous one
 
-    # for li in li_elements:
-    #     print(f"li text = {li.text}")
+    pos_average_word = -1
 
-    # print(f"all types length = {len(all_types)}")
+    for i in range(0, len(all_elements)):
+        if all_elements[i].text == "Average":
+            pos_average_word = i
 
-    ## '//a[contains(@href, "football/' + country + '/' + league +'/")]'
-    xpath_1x2 = ''
+    if pos_average_word >= 0:
+        all_elements = all_elements[:pos_average_word]
+
+    pattern = r'\b[1-9]\.[0-9][0-9]\b'
+
+    cnt = 0
+    home_odds = []
+    draw_odds = []
+    away_odds = []
+
+    for odd in all_elements:
+        odd_match = re.match(pattern, odd.text)
+        odd_match = odd_match.group() if odd_match else None
+        if odd_match != None:
+            if cnt % 3 == 0:
+                home_odds.append(float(odd_match))
+            if cnt % 3 == 1:
+                draw_odds.append(float(odd_match))
+            if cnt % 3 == 2:
+                away_odds.append(float(odd_match))
+            cnt += 1
+
+    average_home_odd = round(sum(home_odds) / len(home_odds),2 )
+    average_draw_odd = round(sum(draw_odds) / len(draw_odds), 2)
+    average_away_odd = round(sum(away_odds) / len(away_odds), 2)
+    # print()
+    # print()
+    # print()
+    # print(f"home odds = {average_home_odd}")
+    # print(f"draw odds = {average_draw_odd}")
+    # print(f"away odds = {average_away_odd}")
+    # print(f"LEN OF GET HOME ODDS = {len(get_home_odds)}")
+
+    return [home_odds, draw_odds, away_odds]
 
 
 if __name__ == "__main__":
