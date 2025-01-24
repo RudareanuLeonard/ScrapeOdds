@@ -239,11 +239,41 @@ def get_match_info(driver, match):
     ###
         #so we get the "visible" elements here
     ###
-
+    """
+    BET TYPE = 1X2
+    BET TYPE = Over/Under
+    BET TYPE = Asian Handicap
+    BET TYPE = Both Teams to Score
+    BET TYPE = Double Chance
+    BET TYPE = European Handicap
+    BET TYPE = Draw No Bet
+    """
     # now we go through each type and try to retreive the odds:
-    for bet_type in all_types_of_bets:
-        get_1x2_odds(driver)
 
+    for i in range (len(all_types_of_bets)):
+        bet_type = all_types_of_bets[i]
+        print(f"bet type = {bet_type.text}")
+        bet_type.click()
+        if i == 0:
+            print("1X2")
+            # get_1x2_odds(driver)
+        if i == 1:
+            print("over/under")
+            get_over_under_odds(driver)
+        if i == 2:
+            print("asian handicap")
+        if i == 3:
+            print("btts")
+        if i == 4:
+            print("double chance")
+        if i == 5:
+            print("european handicap")
+        if i == 6:
+            print("draw no bet")
+
+        time.sleep(3)
+        
+        
 
     
     time.sleep(100)
@@ -253,14 +283,14 @@ def get_match_info(driver, match):
     ul_element = driver.find_element(By.XPATH, "//ul[contains(@class, 'hidden-links')]")
     driver.execute_script("arguments[0].classList.remove('links-invisible');", ul_element) #remove what hides the list
 
-    time.sleep(2)
+    # time.sleep(2)
 
-    hidden_xpath = ul_element.find_elements(By.XPATH, "./li/span")
-    for type in hidden_xpath:
-        type.click()
-        time.sleep(12)
-        print(f"element = {type.text}")
-        all_types_of_bets.append(type)
+    # hidden_xpath = ul_element.find_elements(By.XPATH, "./li/span")
+    # for type in hidden_xpath:
+    #     type.click()
+    #     time.sleep(12)
+    #     print(f"element = {type.text}")
+    #     all_types_of_bets.append(type)
 
 
 
@@ -273,7 +303,7 @@ def get_1x2_odds(driver):
     pos_average_word = -1
 
     for i in range(0, len(all_elements)):
-        if all_elements[i].text == "Average":
+        if all_elements[i].text == "Average": #because i get more things than what i need
             pos_average_word = i
 
     if pos_average_word >= 0:
@@ -310,6 +340,35 @@ def get_1x2_odds(driver):
     # print(f"LEN OF GET HOME ODDS = {len(get_home_odds)}")
 
     return [home_odds, draw_odds, away_odds]
+
+
+def get_over_under_odds(driver):
+
+    time.sleep(5) #time to load the page
+
+    xpath = '//div/div/div[contains(@class, "flex w-full items-center justify-start pl-3 font-bold text-[#2F2F2F]")]'
+
+    try:
+        all_elements = driver.find_elements(By.XPATH, xpath)
+
+        time.sleep(10)
+
+        #i need to create a dictionary where i put type_of_bet and it odds:
+        over_under_dict = {}
+        for el in all_elements:
+            if el.text is not None:
+                print(f"el.text = {el.text}")
+                if el.text not in over_under_dict:
+                    over_under_dict[el.text] = 0
+                    
+                # el.click() #now i click on every category to display odds for it, but i do not get the odds with this, i need to do some extra work
+
+                time.sleep(2)
+
+        time.sleep(200)
+    except Exception as e:
+        print(f"over under method err = {e}")
+
 
 
 if __name__ == "__main__":
