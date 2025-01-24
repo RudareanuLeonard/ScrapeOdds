@@ -259,7 +259,7 @@ def get_match_info(driver, match):
             # get_1x2_odds(driver)
         if i == 1:
             print("over/under")
-            get_over_under_odds(driver)
+            print(get_over_under_odds(driver))
         if i == 2:
             print("asian handicap")
         if i == 3:
@@ -342,7 +342,19 @@ def get_1x2_odds(driver):
     return [home_odds, draw_odds, away_odds]
 
 
+def format_over_under(text):
+    pos_backslasah = 0
+    for i in range(len(text)):
+        if text[i] == '\\':
+            pos_backslasah = i
+
+    print(f'TEXT BEFORE FORMATTING = {text}')
+    text = text[:pos_backslasah]
+    print(f"TEXT = {text}")
+    return text
+
 def get_over_under_odds(driver):
+    driver.execute_script("document.body.style.zoom='10%'")
 
     time.sleep(5) #time to load the page
 
@@ -357,15 +369,35 @@ def get_over_under_odds(driver):
         over_under_dict = {}
         for el in all_elements:
             if el.text is not None:
-                print(f"el.text = {el.text}")
+                el.click()
+                xpath_odds = '//div/div/div/p[contains(@class, "height-content line-through")]'
+                find_all_odds_web_elements = driver.find_elements(By.XPATH, xpath_odds)
+
+                i = 0
+                over_odd = 0
+                under_odd = 0
+                cnt = len(find_all_odds_web_elements) // 2
+
+                for i in range(len(find_all_odds_web_elements)):
+                    odd = float(find_all_odds_web_elements[i].text)
+                    if i % 2 == 0:
+                        over_odd += odd
+                    else:
+                        under_odd += odd
+
+                over_odd = over_odd // cnt
+                under_odd = under_odd // cnt 
+                
                 if el.text not in over_under_dict:
-                    over_under_dict[el.text] = 0
+                    over_under_dict[el.text] = [over_odd, under_odd]
+                    
                     
                 # el.click() #now i click on every category to display odds for it, but i do not get the odds with this, i need to do some extra work
 
                 time.sleep(2)
-
-        time.sleep(200)
+        over_under_dict = {key.split('\n')[0]: value for key, value in over_under_dict.items()}
+        return over_under_dict
+        
     except Exception as e:
         print(f"over under method err = {e}")
 
