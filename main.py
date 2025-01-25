@@ -262,10 +262,12 @@ def get_match_info(driver, match):
             # print(get_over_under_odds(driver))
         if i == 2:
             print("asian handicap")
-            get_asian_handicap_odds(driver)
-            time.sleep(15)
+            # get_asian_handicap_odds(driver)
+            # time.sleep(15)
         if i == 3:
             print("btts")
+            get_both_teams_to_score_odds(driver)
+            time.sleep(50)
         if i == 4:
             print("double chance")
         if i == 5:
@@ -341,7 +343,7 @@ def get_1x2_odds(driver):
     # print(f"away odds = {average_away_odd}")
     # print(f"LEN OF GET HOME ODDS = {len(get_home_odds)}")
 
-    return [home_odds, draw_odds, away_odds]
+    return [average_home_odd, average_draw_odd, average_away_odd]
 
 
 
@@ -450,6 +452,47 @@ def get_asian_handicap_odds(driver):
     except Exception as e:
         print(f"asian handicap error = {e}")
 
+
+def get_both_teams_to_score_odds(driver):
+    time.sleep(5) #time to load the page
+
+    xpath_all_odds = '//div/div/div/p[contains(@class, "height-content line-through")]'
+    # xpath_all_odds = '//*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[3]/div/div/div[1]/div[2]/div[2]/div/div/p'
+    yes_list = []
+    yes_average = 0
+
+    no_list = []
+    no_average = 0
+
+    try:
+        all_elements = driver.find_elements(By.XPATH, xpath_all_odds)
+
+        for i in range(len(all_elements)):
+            odd = float(all_elements[i].text)
+            if i % 2 == 0:
+                yes_list.append(odd)
+            else:
+                no_list.append(odd)
+
+        print()
+        print(f"yes list = {yes_list}")
+        print()
+        print(f"no list = {no_list}")
+
+        cnt = len(all_elements) // 2
+
+        yes_avg_odd = round(sum(yes_list) / cnt, 2)
+        no_avg_odd = round(sum(no_list) / cnt, 2)
+
+        print()
+        print(f"yes_avg_odd = {yes_avg_odd}")
+        print(f"no_avg_Odd = {no_avg_odd}")
+
+        print("BTTS METHOD END")
+        
+        return [yes_avg_odd, no_avg_odd]
+    except Exception as e:
+        print(f"BTTS ERROR = {e}")
 
 
 
