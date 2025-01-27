@@ -264,6 +264,14 @@ def get_match_info(driver, match):
     # print(f"len(all_types_of_bets)) = {len(all_types_of_bets)}")
     # time.sleep(10)
 
+    for i in range(len(all_types_of_bets)):
+        bet_type = all_types_of_bets[i].text
+        print(f"bet type = {bet_type}")
+    
+
+    time.sleep(10)
+
+
     ### get all elements because i do the hover on more
     for i in range (len(all_types_of_bets) - 1): #bcause the last one is set privacy
         bet_type = all_types_of_bets[i]
@@ -301,6 +309,7 @@ def get_match_info(driver, match):
         if i == 6:
             print("draw no bet")
             # get_draw_no_bet_odds(driver)
+            time.sleep(10)
         if i == 7:
             print("correct score") ### DO NOT TAKE ALL THE OPTIONS BECAUSE THE LIST IS TOO LING... MAYBE LOWER THE ZOOM
             # get_correct_score_odds(driver)
@@ -662,85 +671,48 @@ def get_correct_score_odds(driver):
     try:
         all_elements = driver.find_elements(By.XPATH, xpath)
 
-        time.sleep(10)
-
-        c_s_dict = {}
-
         for el in all_elements:
-            if el.text is not None:
-                
-                el.click()
-                time.sleep(2)
-                xpath_odds = '//div/div/div/p[contains(@class, "height-content line-through")]'
-                find_all_odds_web_elements = driver.find_elements(By.XPATH, xpath_odds)
-
-                for el in find_all_odds_web_elements:
-                    print(f"elements = {el.text}")
-
-                time.sleep(10)
-
-                i = 0
-                odd_list = []
-
-                for i in range(len(find_all_odds_web_elements)):
-                    odd = float(find_all_odds_web_elements[i].text)
-                    odd_list.append(odd)
-
-                print(f"odd list = {odd_list}")
-
-                avg_odd = round(sum(odd_list)/len(odd_list), 2)
-                if el.text not in c_s_dict:
-                    c_s_dict[el.text] = avg_odd
-
-                el.click()
-                time.sleep(2)
-
-        c_s_dict = {key.split('\n')[0]: value for key, value in c_s_dict.items()}
-        return c_s_dict
-
+            print(f"elements = {el.text}")
 
     except Exception as e:
         print(f"get_correct_score_odds = {e}")
 
 def get_half_time_full_time_odd(driver):
-    print("HALF TIME FULL TIME")
     driver.execute_script("document.body.style.zoom='30%'")
     time.sleep(5)
+
+    ht_ft_dict = {}
+
     xpath = '//div/div/div[contains(@class, "flex w-full items-center justify-start pl-3 font-bold text-[#2F2F2F]")]'
     try:
         all_elements = driver.find_elements(By.XPATH, xpath)
-
-        ht_ft_dict = {}
-
+        print("A")
         for el in all_elements:
-            if el.text is not None:
-                print(f"element = {el.text}")
-                el.click()
-                xpath_odds = '//div/div/div/p[contains(@class, "height-content line-through")]'
-                find_all_odds_web_elements = driver.find_element(By.XPATH, xpath_odds)
+            el.click() #click on element to open
+            print("B")
+            xpath_odds = '//div/div/div/p[contains(@class, "height-content line-through")]'
+            print("C")
+            time.sleep(1)
+            find_all_odds_web_elements = driver.find_elements(By.XPATH, xpath_odds)
+            print("D")
 
-                odds_list = []
+            odds = []
 
-                for i in range(find_all_odds_web_elements):
-                    odds_list.append(float(find_all_odds_web_elements[i].text))
+            for odd in find_all_odds_web_elements:
+                odds.append(float(odd.text))
 
-                print(f"odds = {odds_list}")
+            print("E")
+            avg_odd = round(sum(odds) / len(odds) , 2)
 
-                # print(f"odds list = {odds_list}")
-                avg_odd = round(sum(odds_list) / len(odds_list  ), 2)
+            if el.text not in ht_ft_dict:
+                ht_ft_dict[el.text] = avg_odd
 
-                if el.text not in ht_ft_dict:
-                    ht_ft_dict[el.text] = avg_odd
+            el.click()
+            
+        ht_ft_dict = {key.split('\n')[0]: value for key, value in ht_ft_dict.items()}
+        print(f"ht_ft_dict = {ht_ft_dict}")
 
-                el.click()
-                time.sleep(0.5)
-
-            ht_ft_dict = {key.split("\n")[0]: value for key, value in ht_ft_dict.items()}
-
-            print(f"HT FT DICT = {ht_ft_dict}")
-            return ht_ft_dict
-
-
+        return ht_ft_dict
 
     except Exception as e:
         print(f"get_ht_ft_method err = {e}")
