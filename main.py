@@ -286,39 +286,40 @@ def get_match_info(driver, match):
         bet_type.click()
         if i == 0:
             print("1X2")
-            # get_1x2_odds(driver)
+            home_draw_away = get_1x2_odds(driver)
+            print(f"1x2 dict = {home_draw_away}")
         if i == 1:
-            print("over/under")
             # time.sleep(100)
-            # print(get_over_under_odds(driver))
+            over_under = get_over_under_odds(driver)
+            print(f"over under = {over_under}")
         if i == 2:
-            print("asian handicap")
-            # get_asian_handicap_odds(driver)
+            asian_handicap = get_asian_handicap_odds(driver)
+            print(f"asian handicap = {asian_handicap}")
             # time.sleep(15)
         if i == 3:
-            print("btts")
-            # get_both_teams_to_score_odds(driver)
+            both_teams_to_score = get_both_teams_to_score_odds(driver)
+            print(f"btts = {both_teams_to_score}")
             # time.sleep(50)
         if i == 4:
-            print("double chance")
-            # get_double_chance_odds(driver)
+            double_chance = get_double_chance_odds(driver)
+            print(f"double chance = {double_chance}")
         if i == 5:
-            print("european handicap")
-            # get_european_handicap_odds(driver)
+            european_handicap = get_european_handicap_odds(driver)
+            print(f"european handicap = {european_handicap}")
             # time.sleep(100)
         if i == 6:
-            print("draw no bet")
-            # get_draw_no_bet_odds(driver)
-            time.sleep(10)
+            draw_no_bet = get_draw_no_bet_odds(driver)
+            print(f"draw no bet = {draw_no_bet}")
+            # time.sleep(10)
         if i == 7:
-            print("correct score") ### DO NOT TAKE ALL THE OPTIONS BECAUSE THE LIST IS TOO LING... MAYBE LOWER THE ZOOM
-            # get_correct_score_odds(driver)
+            correct_score = get_correct_score_odds(driver)
+            print(f"correct score = {correct_score}") ### DO NOT TAKE ALL THE OPTIONS BECAUSE THE LIST IS TOO LING... MAYBE LOWER THE ZOOM
         if i == 8:
-            print("half time / full time")
-            get_half_time_full_time_odd(driver)
+            half_time_full_time = get_half_time_full_time_odds(driver)
+            print(f"half time / full time = {half_time_full_time}")
         if i == 9:
-            print("odd or even")
-
+            odd_even = get_odd_even_odds(driver)
+            print(f"odd or even = {odd_even}")
         
 
     
@@ -576,7 +577,6 @@ def get_double_chance_odds(driver):
     except Exception as e:
         print(f"double chance error = {e}")
 
-
 def get_european_handicap_odds(driver):
     driver.execute_script("document.body.style.zoom='50%'")
     
@@ -662,7 +662,7 @@ def get_draw_no_bet_odds(driver):
     return [home_odd, away_odd]
 
 def get_correct_score_odds(driver):
-    driver.execute_script("document.body.style.zoom='10%'")
+    driver.execute_script("document.body.style.zoom='1%'")
 
     time.sleep(5) #time to load the page
 
@@ -677,7 +677,7 @@ def get_correct_score_odds(driver):
     except Exception as e:
         print(f"get_correct_score_odds = {e}")
 
-def get_half_time_full_time_odd(driver):
+def get_half_time_full_time_odds(driver):
     driver.execute_script("document.body.style.zoom='30%'")
     time.sleep(5)
 
@@ -716,6 +716,56 @@ def get_half_time_full_time_odd(driver):
 
     except Exception as e:
         print(f"get_ht_ft_method err = {e}")
+
+def get_odd_even_odds(driver):
+    time.sleep(5)
+    print("ODD EVEN ODDS")
+    xpath_all_odds = '//div/div/div/p'
+
+    all_elements = driver.find_elements(By.XPATH, xpath_all_odds)
+
+    pos_average_word = -1
+
+    for i in range(0, len(all_elements)):
+        if all_elements[i].text == "Average": #because i get more things than what i need
+            pos_average_word = i
+
+    if pos_average_word >= 0:
+        all_elements = all_elements[:pos_average_word]
+
+    pattern = r'\b[1-9]\.[0-9][0-9]\b'
+
+    cnt = 0
+
+    odd_b = []
+    even = []
+
+    for odd in all_elements:
+        odd_match = re.match(pattern, odd.text)
+        odd_match = odd_match.group() if odd_match else None
+
+        if odd_match != None:
+            if cnt % 2 == 0:
+                odd_b.append(float(odd_match))
+            else:
+                even.append(float(odd_match))
+        cnt += 1
+
+    print(f"odd = {odd_b}")
+    print(f"even = {even}")
+
+    avg_odd_odd = round(sum(odd_b) / len(odd_b), 2)
+    avg_even_odd = round(sum(even) / len(even), 2)
+
+    odd_even_dict = {
+        "odd": avg_odd_odd,
+        "even": avg_even_odd
+    }
+
+    print(f"dict = {odd_even_dict}")
+
+    return odd_even_dict
+
 
 
 if __name__ == "__main__":
