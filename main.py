@@ -52,6 +52,8 @@ def transform_league_to_url(league):
 
 def get_football_data():
 
+    
+
     call_get_football_countries = get_football_countries()
 
     country_leagues = {}
@@ -59,7 +61,7 @@ def get_football_data():
 
     driver = call_get_football_countries[0]
     get_countries = call_get_football_countries[1] #i need to use he ".text"
-
+    driver.execute_script("document.body.style.zoom='10%'")
     country_to_url = []
 
     for country in get_countries: #modify country string so i can add it to the xpath string
@@ -110,9 +112,24 @@ def get_football_data():
  
                 league_results = get_matches[0]
                 league_standings = get_matches[1]
+
+                # print(f"GET MATCHES = {get_matches}")
+
+                print()
+                print()
+                print()
+                print()
+                print()
+                print()
+                print()
+
+                print("GET FOOTBALL DATA A")
+
                 #get_matches[2] is the time when match starts
                 #so the matches start from get_matches[3]
                 for i in range (3, len(get_matches)):
+                    match = get_matches[i]
+                    print(f" match = {match.text}")
                     match.click()
                     get_match_info(driver, match)
                     driver.back()
@@ -179,7 +196,7 @@ def get_match_info(driver, match):
 
     driver.execute_script("document.body.style.zoom='30%'")
 
-    types_of_bets = [] #here i ll store all types of bets... those will be names of the dictionaries
+    match_dict = {}
 
     one_x_two = {}
     over_under = {}
@@ -189,6 +206,7 @@ def get_match_info(driver, match):
     draw_no_bet = {}
     halftime_fulltime = {}
     odd_or_even = {}
+
 
 
     
@@ -206,12 +224,36 @@ def get_match_info(driver, match):
 
     find_types = driver.find_elements(By.XPATH, general_xpath)
 
+    print("ALL TYPES find_types")
+    match_dict = {}
+
+    for i in range(0, len(find_types)):
+        type = find_types[i].text
+        if i != 1:
+            if type == "1X2":
+                print("1X2")
+                home_draw_away = get_1x2_odds(driver)
+                print(home_draw_away)
+                print()
+                print()
+            if type == "Over/Under":
+                print("Over/Under")
+                over_under = get_over_under_odds(driver)
+                print(over_under)
+                print()
+                print()
+
+    print("NOW TIME SLEEP 100 seconds")
+    time.sleep(100)
+
+
+
     i = 0
 
-    for el in find_types:
-        print(f"find types el = {el.text}")
+    # for el in find_types:
+    #     print(f"find types el = {el.text}")
 
-    time.sleep(10)
+    # time.sleep(10)
 
     while find_types[i].text != '': #get type of bets but without whats on "more" button
         type = find_types[i]
@@ -231,66 +273,92 @@ def get_match_info(driver, match):
     # now we go through each type and try to retreive the odds:
     
 
-    for i in range(len(all_types_of_bets)):
-        bet_type = all_types_of_bets[i].text
+    # for i in range(len(all_types_of_bets)):
+    #     bet_type = all_types_of_bets[i].text
     
 
-    time.sleep(10)
+    # time.sleep(10)
 
 
-    ### get all elements because i do the hover on more
-    for i in range (len(all_types_of_bets) - 1): #bcause the last one is set privacy
-        bet_type = all_types_of_bets[i]
-        more_xpath = '//*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[2]/div[2]/div/div/div/button/div'
-        more = driver.find_element(By.XPATH, more_xpath)
-        hover_more = ActionChains(driver).move_to_element(more)
-        hover_more.perform()
-        start = time.time()
-        time.sleep(2)
-        bet_type.click()
-        if i == 0:
-            home_draw_away = get_1x2_odds(driver)
-            print(f"1x2 = {home_draw_away}")
-        if i == 1:
-            # time.sleep(100)
-            over_under = get_over_under_odds(driver)
-            print(f"over under = {over_under}")
-        if i == 2:
-            asian_handicap = get_asian_handicap_odds(driver)
-            print(f"asian handicap = {asian_handicap}")
-            # time.sleep(15)
-        if i == 3:
-            both_teams_to_score = get_both_teams_to_score_odds(driver)
-            print(f"btts = {both_teams_to_score}")
-            # time.sleep(50)
-        if i == 4:
-            double_chance = get_double_chance_odds(driver)
-            print(f"double chance = {double_chance}")
-        if i == 5:
-            european_handicap = get_european_handicap_odds(driver)
-            print(f"european handicap = {european_handicap}")
-            # time.sleep(100)
-        if i == 6:
-            draw_no_bet = get_draw_no_bet_odds(driver)
-            print(f"draw no bet = {draw_no_bet}")
-            # time.sleep(10)
-        if i == 7:
-            correct_score = get_correct_score_odds(driver)
-            print(f"correct score = {correct_score}")
-        if i == 8:
-            half_time_full_time = get_half_time_full_time_odds(driver)
-            print(f"half time / full time = {half_time_full_time}")
-        if i == 9:
-            odd_even = get_odd_even_odds(driver)
-            print(f"odd or even = {odd_even}")
+    # ### get all elements because i do the hover on more
+    # for i in range (len(all_types_of_bets) - 1): #because the last one is set privacy
+    #     bet_type = all_types_of_bets[i]
+    #     print(f"bet type = {bet_type.text}")
+    #     more_xpath = '//*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[2]/div[2]/div/div/div/button/div'
+    #     # more = driver.find_element(By.XPATH, more_xpath)
+    #     # hover_more = ActionChains(driver).move_to_element(more)
+    #     # hover_more.perform()
+    #     start = time.time()
+    #     time.sleep(5)
+    #     if bet_type.text != "Home/Away":
+            
+    #         if bet_type.text == "1X2":
+    #             # home_draw_away = get_1x2_odds(driver)
+    #             # match_dict["1x2"] = home_draw_away
+    #             # print(f"1x2 = {home_draw_away}")
+    #             print("1x2")
+    #         if bet_type.text == "Over/Under":
+    #             # over_under = get_over_under_odds(driver)
+    #             # match_dict["over_under"] = over_under
+    #             # print(f"over under = {over_under}")
+    #             print("over/under")
+    #             time.sleep(100)
+    #         # if bet_type.text == "Asian Handicap":
+    #         #     # asian_handicap = get_asian_handicap_odds(driver)
+    #         #     # match_dict["asian_handicap"] = asian_handicap
+    #         #     # print(f"asian handicap = {asian_handicap}")
+    #         #     print("asian handicap")
+    #         # if bet_type.text == "Both Teams to Score":
+    #         #     # both_teams_to_score = get_both_teams_to_score_odds(driver)
+    #         #     # match_dict["btts"] = both_teams_to_score
+    #         #     # print(f"btts = {both_teams_to_score}")
+    #         #     print("btts")
+    #         # if bet_type.text == "Double Chance":
+    #         #     # double_chance = get_double_chance_odds(driver)
+    #         #     # match_dict["double_chance"] = double_chance
+    #         #     # print(f"double chance = {double_chance}")
+    #         #     print("double chance")
+    #         # if bet_type.text == "European Handicap":
+    #         #     # european_handicap = get_european_handicap_odds(driver)
+    #         #     # match_dict["european_handicap"] = european_handicap
+    #         #     # print(f"european handicap = {european_handicap}")
+    #         #     print("european handicap")
+    #         # if bet_type.text == "Draw No Bet":
+    #         #     # draw_no_bet = get_draw_no_bet_odds(driver)
+    #         #     # match_dict["draw_no_bet"] = draw_no_bet
+    #         #     # print(f"draw no bet = {draw_no_bet}")
+    #         #     print("draw no bet")
+    #         # if bet_type.text == "Correct Score":
+    #         #     # correct_score = get_correct_score_odds(driver)
+    #         #     # match_dict["correct_score"] = correct_score
+    #         #     # print(f"correct score = {correct_score}")
+    #         #     print("correct score")
+    #         # if bet_type.text == "Half Time / Full Time ":
+    #         #     # half_time_full_time = get_half_time_full_time_odds(driver)
+    #         #     # match_dict["ht_ft"] = half_time_full_time
+    #         #     # print(f"half time / full time = {half_time_full_time}")
+    #         #     print("ht / ft")
+    #         # if bet_type.text == "Odd or Even":
+    #         #     # odd_even = get_odd_even_odds(driver)
+    #         #     # match_dict["odd_even"] = odd_even
+    #         #     # print(f"odd or even = {odd_even}")
+    #         #     print("odd or even")
 
-        end = time.time()
-        
-    print(f"TIME TAKEN FOR A MATCH = {end - start} seconds")
+    #         bet_type.click()
+
+    #         end = time.time()
+    #         print()
+    #         print()
+    #         print()
+    #         print("Match dict:")
+    #         print(match_dict)
+
+    #         print(f"TIME TAKEN FOR A MATCH = {end - start} seconds")
+    #     else:
+    #         print("THAT IS HOME/AWAY")
 
     
     
-
 
 
     time.sleep(1000)
@@ -300,10 +368,34 @@ def get_match_info(driver, match):
 
 
 def get_1x2_odds(driver):
-    xpath_all_odds = '//div/div/div/p'
+    print()
+    print()
+    print()
+    print("HELLO WE ARE INSIDE THE 1X2 METHOD")
+    # //*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[3]/div/div/div/div/div/div/div/a
+    xpath_all_odds = '//div/div/div/div/div/div/div/a'
+
+    """
+    
+    xpath 1 = //*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[3]/div/div/div[1]/div/div/div/div/p
+
+    xpath 2 = //*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[3]/div/div/div[1]/div/div/div/div/p
+    
+    xpath 3 = //*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[3]/div/div/div[1]/div/div/div/div/p
+
+    xpath 4 = //*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[3]/div/div/div[1]/div/div/div/div/p
+
+    """
 
     all_elements = driver.find_elements(By.XPATH, xpath_all_odds)
+    # all_elements = driver.find_elements(By.CSS_SELECTOR, "[data-v-10e18331]")
     # get_home_odds = driver.find_elements(By.CSS_SELECTOR, "[data-v-10e18331]") ------ IT RETURNS BETTER RESULTS, BUT WHAT IF THE CHANGES the data-v... ? so i ll use the previous one
+
+    print("NOW I AM GONNA PRINT ALL ELEMENTS")
+    print()
+    for el in all_elements:
+        print(f"element = {el.text}")
+        time.sleep(2)
 
     pos_average_word = -1
 
@@ -322,8 +414,10 @@ def get_1x2_odds(driver):
     away_odds = []
 
     for odd in all_elements:
+        print(f"odd = {odd.text}  (it is the odd before regex)")
         odd_match = re.match(pattern, odd.text)
         odd_match = odd_match.group() if odd_match else None
+        print(f"odd_match = {odd_match}   (it is the odd after regex)")
         if odd_match != None:
             if cnt % 3 == 0:
                 home_odds.append(float(odd_match))
@@ -333,12 +427,27 @@ def get_1x2_odds(driver):
                 away_odds.append(float(odd_match))
             cnt += 1
 
+        # print(f"all home odds = {home_odds}")
+        # print(f"all draw odds = {draw_odds}")
+        # print(f"all away odds = {away_odds}")
+
     average_home_odd = round(sum(home_odds) / len(home_odds), 2)
     average_draw_odd = round(sum(draw_odds) / len(draw_odds), 2)
     average_away_odd = round(sum(away_odds) / len(away_odds), 2)
 
+    # print(f"average home odd = {average_home_odd}")
+    # print(f"average draw odd = {average_draw_odd}")
+    # print(f"average away  odd = {average_away_odd}")
+
+    time.sleep(100)
 
     return [average_home_odd, average_draw_odd, average_away_odd]
+
+
+
+def get_home_away_odds(driver):
+    print("HOME AWAY ODDS METHOD")
+
 
 
 
@@ -346,6 +455,9 @@ def get_over_under_odds(driver):
     driver.execute_script("document.body.style.zoom='10%'")
 
     time.sleep(5) #time to load the page
+
+    # print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    # return"TEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEST"
 
     xpath = '//div/div/div[contains(@class, "flex w-full items-center justify-start pl-3 font-bold text-[#2F2F2F]")]'
 
@@ -368,11 +480,12 @@ def get_over_under_odds(driver):
                 cnt = len(find_all_odds_web_elements) // 2
 
                 for i in range(len(find_all_odds_web_elements)):
-                    odd = float(find_all_odds_web_elements[i].text)
-                    if i % 2 == 0:
-                        over_odd += odd
-                    else:
-                        under_odd += odd
+                    if find_all_odds_web_elements[i].text != '-':
+                        odd = float(find_all_odds_web_elements[i].text)
+                        if i % 2 == 0:
+                            over_odd += odd
+                        else:
+                            under_odd += odd
 
                 over_odd = over_odd / cnt
                 over_odd = round(over_odd, 2)
@@ -394,55 +507,66 @@ def get_over_under_odds(driver):
 
 
 def get_asian_handicap_odds(driver):
-    time.sleep(5)
-    driver.execute_script("document.body.style.zoom='50%'")
+    driver.execute_script("document.body.style.zoom='200%'")
     # driver.execute_script("document.body.style.zoom='10%'")
     # driver.execute_script("document.body.style.zoom='10%'")
 
     time.sleep(5) #time to load the page
 
-    xpath = '//div/div/div[contains(@class, "flex w-full items-center justify-start pl-3 font-bold text-[#2F2F2F]")]'
+    # xpath = '//div/div/div[contains(@class, "flex w-full items-center justify-start pl-3 font-bold text-[#2F2F2F]")]'
     
     try:
-        all_elements = driver.find_elements(By.XPATH, xpath)
-        time.sleep(10)
+    #     all_elements = driver.find_elements(By.XPATH, xpath)
+    #     time.sleep(10)
+    #     pattern = r'\b[1-9]\.[0-9][0-9]\b'
 
-        a_h_dict = {}
+    #     a_h_dict = {}
 
-        for el in all_elements:
-            if el.text is not None:
-                el.click()
-                xpath_odds = '//div/div/div/p[contains(@class, "height-content line-through")]'
-                find_all_odds_web_elements = driver.find_elements(By.XPATH, xpath_odds)
+    #     for el in all_elements:
+    #         if el.text is not None:
+    #             el.click()
+    #             xpath_odds = '//div/div/div/p[contains(@class, "height-content line-through")]'
+    #             find_all_odds_web_elements = driver.find_elements(By.XPATH, xpath_odds)
 
-                i = 0
-                home_odd = 0 #over become home
-                home_odds_list = []
-                away_odd = 0 #under become away
-                away_odds_list = []
+    #             i = 0
+    #             home_odd = 0 #over become home
+    #             home_odds_list = []
+    #             away_odd = 0 #under become away
+    #             away_odds_list = []
 
-                for i in range(len(find_all_odds_web_elements)):
-                    odd = float(find_all_odds_web_elements[i].text)
-                    if i % 2 == 0:
-                        home_odd += odd
-                        home_odds_list.append(odd)
-                    else:
-                        away_odd += odd
-                        away_odds_list.append(odd)
+    #             for i in range(len(find_all_odds_web_elements)):
+    #                 if find_all_odds_web_elements[i].text == '-':
+    #                     print(f"WE got - = {find_all_odds_web_elements[i].text} ")
+    #                 odd_el = find_all_odds_web_elements[i]
+    #                 odd = odd_el.text
 
-                home_odd = round(sum(home_odds_list) / len(home_odds_list), 2)
-                away_odd = round(sum(away_odds_list) / len(away_odds_list), 2)  
+    #                 if odd != '-':
+    #                     if i % 2 == 0:
+    #                         home_odd += odd
+    #                         home_odds_list.append(float(odd))
+    #                     else:
+    #                         away_odd += odd
+    #                         away_odds_list.append(float(odd))
+
+    #             if len(home_odds_list) > 0:
+    #                 home_odd = round(sum(home_odds_list) / len(home_odds_list), 2)
                 
-                if el.text not in a_h_dict:
-                    a_h_dict[el.text] = [home_odd, away_odd]
+    #             if len(away_odds_list) > 0:
+    #                 away_odd = round(sum(away_odds_list) / len(away_odds_list), 2)  
+                
+    #             if el.text not in a_h_dict:
+    #                 a_h_dict[el.text] = [home_odd, away_odd]
                 
                     
-                # el.click() #now i click on every category to display odds for it, but i do not get the odds with this, i need to do some extra work
-                el.click()
-                time.sleep(2)
-        a_h_dict = {key.split('\n')[0]: value for key, value in a_h_dict.items()}
+    #             # el.click() #now i click on every category to display odds for it, but i do not get the odds with this, i need to do some extra work
+    #             el.click()
+    #             time.sleep(2)
+    #     a_h_dict = {key.split('\n')[0]: value for key, value in a_h_dict.items()}
 
-        return a_h_dict
+    #     return a_h_dict
+
+
+        print("TEST ME GETTING AH ODDS  NOT WORKING ANYMORE FFS")
 
     except Exception as e:
         print(f"asian handicap error = {e}")
@@ -463,11 +587,12 @@ def get_both_teams_to_score_odds(driver):
         all_elements = driver.find_elements(By.XPATH, xpath_all_odds)
 
         for i in range(len(all_elements)):
-            odd = float(all_elements[i].text)
-            if i % 2 == 0:
-                yes_list.append(odd)
-            else:
-                no_list.append(odd)
+            if all_elements[i].text != '-':
+                odd = float(all_elements[i].text)
+                if i % 2 == 0:
+                    yes_list.append(odd)
+                else:
+                    no_list.append(odd)
 
 
         cnt = len(all_elements) // 2
@@ -550,14 +675,15 @@ def get_european_handicap_odds(driver):
                 away_odds = []
 
                 for i in range(len(find_all_odds_web_elements)):
-                    odd = find_all_odds_web_elements[i].text
+                    if find_all_odds_web_elements[i].text != '-':
+                        odd = find_all_odds_web_elements[i].text
 
-                    if i % 3 == 0:
-                        home_odds.append(float(odd))
-                    if i % 3 == 1:
-                        draw_odds.append(float(odd))
-                    if i % 3 == 2:
-                        away_odds.append(float(odd))
+                        if i % 3 == 0:
+                            home_odds.append(float(odd))
+                        if i % 3 == 1:
+                            draw_odds.append(float(odd))
+                        if i % 3 == 2:
+                            away_odds.append(float(odd))
 
 
                 avg_home_odd = round(sum(home_odds)/len(home_odds), 2)
@@ -629,7 +755,8 @@ def get_correct_score_odds(driver):
             odds_list = []
 
             for odd in find_all_odds_web_elements:
-                odds_list.append(float(odd.text))
+                if odd != '-':
+                    odds_list.append(float(odd.text))
 
             avg_odd = round(sum(odds_list) / len(odds_list), 2)
 
@@ -666,7 +793,8 @@ def get_half_time_full_time_odds(driver):
             odds = []
 
             for odd in find_all_odds_web_elements:
-                odds.append(float(odd.text))
+                if odd != '-':
+                    odds.append(float(odd.text))
 
             avg_odd = round(sum(odds) / len(odds) , 2)
 
@@ -725,6 +853,9 @@ def get_odd_even_odds(driver):
 
 
     return odd_even_dict
+
+def write_in_json(text):
+    pass
 
 
 
