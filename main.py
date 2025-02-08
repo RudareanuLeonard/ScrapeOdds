@@ -250,15 +250,18 @@ def get_match_info(driver, match):
     BET TYPE = Draw No Bet
     """
 
-    all_types_of_bets[1].click()
+    all_types_of_bets[3].click()
     # driver.execute_script("document.body.style.zoom='30%'")
 
 
     # ah = get_asian_handicap_odds(driver)
     # print(f"ah = {ah}")
 
-    ou = get_over_under_odds(driver)
-    print(f"ou = {ou}")
+    # ou = get_over_under_odds(driver)
+    # print(f"ou = {ou}")
+
+    # btts = get_both_teams_to_score_odds(driver)
+    # print(f"btts = {btts}")
     time.sleep(100)
 
 
@@ -538,27 +541,23 @@ def get_asian_handicap_odds(driver):
 
 
 
-
-
-
-
-
-
 def get_both_teams_to_score_odds(driver):
     time.sleep(5) #time to load the page
+    print("IN BTTS METHOD")
 
-    xpath_all_odds = '//div/div/div/p[contains(@class, "height-content line-through")]'
+    xpath_all_odds = '//div/a[@data-v-10e18331]'
     # xpath_all_odds = '//*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[3]/div/div/div[1]/div[2]/div[2]/div/div/p'
     yes_list = []
-    yes_average = 0
+    yes_avg_odd = 0
 
     no_list = []
-    no_average = 0
+    no_avg_odd = 0
 
     try:
         all_elements = driver.find_elements(By.XPATH, xpath_all_odds)
 
         for i in range(len(all_elements)):
+            # print(f"all elements[i] = {all_elements[i].text}")
             if all_elements[i].text != '-':
                 odd = float(all_elements[i].text)
                 if i % 2 == 0:
@@ -567,10 +566,12 @@ def get_both_teams_to_score_odds(driver):
                     no_list.append(odd)
 
 
-        cnt = len(all_elements) // 2
+        if len(yes_list) > 0:
+            yes_avg_odd = round(sum(yes_list) / len(yes_list), 2)
 
-        yes_avg_odd = round(sum(yes_list) / cnt, 2)
-        no_avg_odd = round(sum(no_list) / cnt, 2)
+        if len(no_list) > 0:
+            no_avg_odd = round(sum(no_list) / len(no_list), 2)
+        
 
 
         return [yes_avg_odd, no_avg_odd]
