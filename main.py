@@ -250,7 +250,7 @@ def get_match_info(driver, match):
     BET TYPE = Draw No Bet
     """
 
-    all_types_of_bets[3].click()
+    all_types_of_bets[4].click()
     # driver.execute_script("document.body.style.zoom='30%'")
 
 
@@ -262,6 +262,10 @@ def get_match_info(driver, match):
 
     # btts = get_both_teams_to_score_odds(driver)
     # print(f"btts = {btts}")
+
+    dc = get_double_chance_odds(driver)
+    print(f"dc = {dc}")
+
     time.sleep(100)
 
 
@@ -581,7 +585,7 @@ def get_both_teams_to_score_odds(driver):
 
 def get_double_chance_odds(driver):
     time.sleep(5)
-    xpath_all_odds = '//div/div/div/p'
+    xpath_all_odds = '//div/div/div/a[@data-v-10e18331]'
 
     try:
         all_elements = driver.find_elements(By.XPATH, xpath_all_odds)
@@ -604,21 +608,26 @@ def get_double_chance_odds(driver):
         draw_away_odds = []
 
         for odd in all_elements:
-            odd_match = re.match(pattern, odd.text)
-            odd_match = odd_match.group() if odd_match else None
-            if odd_match != None:
+            # odd_match = re.match(pattern, odd.text)
+            # odd_match = odd_match.group() if odd_match else None
+            if odd.text != '-':
                 if cnt % 3 == 0:
-                    home_draw_odds.append(float(odd_match))
+                    home_draw_odds.append(float(odd.text))
                 if cnt % 3 == 1:
-                    home_away_odds.append(float(odd_match))
+                    home_away_odds.append(float(odd.text))
                 if cnt % 3 == 2:
-                    draw_away_odds.append(float(odd_match))
+                    draw_away_odds.append(float(odd.text))
             cnt += 1
 
-        time.sleep(5)
-        average_home_draw_odd = round( sum(home_draw_odds)/len(home_draw_odds) ,2)
-        average_home_away_odd = round( sum(home_away_odds)/len(home_away_odds) ,2)
-        average_draw_away_odd = round( sum(draw_away_odds)/len(draw_away_odds) ,2)
+        # time.sleep(5)
+        if len(home_draw_odds) > 0:
+            average_home_draw_odd = round( sum(home_draw_odds)/len(home_draw_odds), 2)
+        
+        if len(home_away_odds) > 0:
+            average_home_away_odd = round( sum(home_away_odds)/len(home_away_odds), 2)
+
+        if len(draw_away_odds) > 0:
+            average_draw_away_odd = round( sum(draw_away_odds)/len(draw_away_odds), 2)
 
 
         return[average_home_draw_odd, average_home_away_odd, average_draw_away_odd]
