@@ -212,10 +212,10 @@ def get_match_info(driver, match):
     
     #hover on "More"
 
-    # more_xpath = '//*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[2]/div[2]/div/div/div/button/div'
-    # more = driver.find_element(By.XPATH, more_xpath)
-    # hover_more = ActionChains(driver).move_to_element(more)
-    # hover_more.perform()
+    more_xpath = '//*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[2]/div[2]/div/div/div/button/div'
+    more = driver.find_element(By.XPATH, more_xpath)
+    hover_more = ActionChains(driver).move_to_element(more)
+    hover_more.perform()
 
 
     general_xpath = '//ul/li/span'
@@ -250,7 +250,13 @@ def get_match_info(driver, match):
     BET TYPE = Draw No Bet
     """
 
-    all_types_of_bets[4].click()
+
+    all_types_of_bets[8].click()
+
+    # 5 dnb    -- done
+    # 6 cs   -- done
+    # 7 ht ft   -- done
+    # 8 odd or even
     # driver.execute_script("document.body.style.zoom='30%'")
 
 
@@ -263,10 +269,22 @@ def get_match_info(driver, match):
     # btts = get_both_teams_to_score_odds(driver)
     # print(f"btts = {btts}")
 
-    dc = get_double_chance_odds(driver)
-    print(f"dc = {dc}")
+    # dc = get_double_chance_odds(driver)
+    # print(f"dc = {dc}")
 
-    time.sleep(100)
+    # dnb = get_draw_no_bet_odds(driver)
+    # print(f"dnb = {dnb}")
+
+    # cs = get_correct_score_odds(driver)
+    # print(f"cs = {cs}")
+
+    # ht_ft = get_half_time_full_time_odds(driver)
+    # print(f"ht ft = {ht_ft}")
+
+    odd_or_even = get_odd_even_odds(driver)
+    print(f"odd or even = {odd_or_even}")
+    
+    time.sleep(1000)
 
 
     # now we go through each type and try to retreive the odds:
@@ -354,7 +372,7 @@ def get_1x2_odds(driver):
     print("HELLO WE ARE INSIDE THE 1X2 METHOD")
     time.sleep(5)
     # //*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[3]/div/div/div/div/div/div/div/a
-    xpath_all_odds = '//div/div/div/div/div/div/div/a'
+    xpath_all_odds = '//div/div/div/div/div/div/div/p'
 
     """
     
@@ -396,16 +414,15 @@ def get_1x2_odds(driver):
 
     for odd in all_elements:
         # print(f"odd = {odd.text}  (it is the odd before regex)")
-        odd_match = re.match(pattern, odd.text)
-        odd_match = odd_match.group() if odd_match else None
+        odd = odd.get_attribute("textContent").strip()
         # print(f"odd_match = {odd_match}   (it is the odd after regex)")
-        if odd_match != None:
+        if odd != None:
             if cnt % 3 == 0:
-                home_odds.append(float(odd_match))
+                home_odds.append(float(odd))
             if cnt % 3 == 1:
-                draw_odds.append(float(odd_match))
+                draw_odds.append(float(odd))
             if cnt % 3 == 2:
-                away_odds.append(float(odd_match))
+                away_odds.append(float(odd))
             cnt += 1
 
     print(f"all home odds = {home_odds} and its len = {len(home_odds)}")
@@ -414,10 +431,15 @@ def get_1x2_odds(driver):
 
     print()
     print()
-
-    average_home_odd = round(sum(home_odds) / len(home_odds), 2)
-    average_draw_odd = round(sum(draw_odds) / len(draw_odds), 2)
-    average_away_odd = round(sum(away_odds) / len(away_odds), 2)
+    
+    if len(home_odds) > 0:
+        average_home_odd = round(sum(home_odds) / len(home_odds), 2)
+    
+    if len(draw_odds) > 0:
+        average_draw_odd = round(sum(draw_odds) / len(draw_odds), 2)
+    
+    if len(away_odds) > 0:
+        average_away_odd = round(sum(away_odds) / len(away_odds), 2)
 
     print(f"average home odd = {average_home_odd}")
     print(f"average draw odd = {average_draw_odd}")
@@ -445,7 +467,7 @@ def get_over_under_odds(driver):
         for o_u_type in all_elements:
             print(f"element = {o_u_type.text}")
             o_u_type.click() #clicked on o_u_type
-            xpath_odds = '//div/div/div/a[@data-v-10e18331]'
+            xpath_odds = '//div/div/div/p[@data-v-10e18331]'
             time.sleep(5)
             find_all_odds = driver.find_elements(By.XPATH, xpath_odds)
 
@@ -457,6 +479,7 @@ def get_over_under_odds(driver):
 
             for i in range(len(find_all_odds)):
                 odd = find_all_odds[i].text
+                odd = odd.get_attribute("textContent").strip()
                 # print(f"ODD = {odd}")
                 # time.sleep(5)
                 if odd != '-':
@@ -514,7 +537,7 @@ def get_asian_handicap_odds(driver):
 
                 for i in range(len(find_all_odds_web_elements)):
                     # odd = float(find_all_odds_web_elements[i].text)
-                    odd = (find_all_odds_web_elements[i].text)
+                    odd = odd.get_attribute("textContent").strip()
                     if odd != '-':
                         if i % 2 == 0:
                             home_odds_list.append(float(odd))
@@ -549,7 +572,7 @@ def get_both_teams_to_score_odds(driver):
     time.sleep(5) #time to load the page
     print("IN BTTS METHOD")
 
-    xpath_all_odds = '//div/a[@data-v-10e18331]'
+    xpath_all_odds = '//div/p[@data-v-10e18331]'
     # xpath_all_odds = '//*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[3]/div/div/div[1]/div[2]/div[2]/div/div/p'
     yes_list = []
     yes_avg_odd = 0
@@ -562,8 +585,8 @@ def get_both_teams_to_score_odds(driver):
 
         for i in range(len(all_elements)):
             # print(f"all elements[i] = {all_elements[i].text}")
-            if all_elements[i].text != '-':
-                odd = float(all_elements[i].text)
+            odd = all_elements[i].get_attribute("textContent").strip()
+            if odd != '-':
                 if i % 2 == 0:
                     yes_list.append(odd)
                 else:
@@ -585,7 +608,7 @@ def get_both_teams_to_score_odds(driver):
 
 def get_double_chance_odds(driver):
     time.sleep(5)
-    xpath_all_odds = '//div/div/div/a[@data-v-10e18331]'
+    xpath_all_odds = '//div/div/div/p[@data-v-10e18331]'
 
     try:
         all_elements = driver.find_elements(By.XPATH, xpath_all_odds)
@@ -608,15 +631,14 @@ def get_double_chance_odds(driver):
         draw_away_odds = []
 
         for odd in all_elements:
-            # odd_match = re.match(pattern, odd.text)
-            # odd_match = odd_match.group() if odd_match else None
-            if odd.text != '-':
+            odd = odd.get_attribute("textContent").strip()
+            if odd != '-':
                 if cnt % 3 == 0:
-                    home_draw_odds.append(float(odd.text))
+                    home_draw_odds.append(float(odd))
                 if cnt % 3 == 1:
-                    home_away_odds.append(float(odd.text))
+                    home_away_odds.append(float(odd))
                 if cnt % 3 == 2:
-                    draw_away_odds.append(float(odd.text))
+                    draw_away_odds.append(float(odd))
             cnt += 1
 
         # time.sleep(5)
@@ -680,8 +702,8 @@ def get_european_handicap_odds(driver):
         print(f"get european handicap odds = {e}")
 
 def get_draw_no_bet_odds(driver):
-    time.sleep(7)
-    xpath_all_odds = '//div/div/div/p'
+    time.sleep(3)
+    xpath_all_odds = '//div/p[@data-v-10e18331]'
     all_elements = driver.find_elements(By.XPATH, xpath_all_odds)
 
     pos_average_word = -1
@@ -699,26 +721,31 @@ def get_draw_no_bet_odds(driver):
     home_list = []
     away_list = []
     cnt = 0
+    home_odd = 0
+    away_odd = 0
 
     for odd in all_elements:
-        odd_match = re.match(pattern, odd.text)
-        odd_match = odd_match.group() if odd_match else None
-
-        if odd_match != None:
+        odd = odd.get_attribute("textContent").strip()
+        # print(f'odd element = {odd}')
+        # print(f"cnt = {cnt}")
+        # print()
+        if odd != '-':
             if cnt % 2 == 0:
-                home_list.append(float(odd.text))
+                home_list.append(float(odd))
             else:
-                away_list.append(float(odd.text))
-
+                away_list.append(float(odd))
         cnt += 1
+    # time.sleep(100)
+    if len(home_list) > 0:
+        home_odd = round(sum(home_list) / len(home_list) , 2)
 
-    home_odd = round(sum(home_list) / len(home_list) , 2)
-    away_odd = round(sum(away_list) / len(away_list) , 2)
+    if len(away_list) > 0:
+        away_odd = round(sum(away_list) / len(away_list) , 2)
 
     return [home_odd, away_odd]
 
 def get_correct_score_odds(driver):
-    driver.execute_script("document.body.style.zoom='10%'")
+    driver.execute_script("document.body.style.zoom='1%'")
 
     time.sleep(5) #time to load the page
 
@@ -737,10 +764,12 @@ def get_correct_score_odds(driver):
             odds_list = []
 
             for odd in find_all_odds_web_elements:
+                odd = odd.get_attribute("textContent").strip()
                 if odd != '-':
-                    odds_list.append(float(odd.text))
+                    odds_list.append(float(odd))
 
-            avg_odd = round(sum(odds_list) / len(odds_list), 2)
+            if len(odds_list) > 0:
+                avg_odd = round(sum(odds_list) / len(odds_list), 2)
 
             if el.text is not None:
                 if el.text not in cs_dict:
@@ -768,17 +797,19 @@ def get_half_time_full_time_odds(driver):
         all_elements = driver.find_elements(By.XPATH, xpath)
         for el in all_elements:
             el.click() #click on element to open
-            xpath_odds = '//div/div/div/p[contains(@class, "height-content line-through")]'
+            xpath_odds = '//div/p[@data-v-10e18331]'
             time.sleep(1)
             find_all_odds_web_elements = driver.find_elements(By.XPATH, xpath_odds)
 
             odds = []
 
             for odd in find_all_odds_web_elements:
+                odd = odd.get_attribute("textContent").strip()
                 if odd != '-':
-                    odds.append(float(odd.text))
+                    odds.append(float(odd))
 
-            avg_odd = round(sum(odds) / len(odds) , 2)
+            if len(odds) > 0:
+                avg_odd = round(sum(odds) / len(odds) , 2)
 
             if el.text not in ht_ft_dict:
                 ht_ft_dict[el.text] = avg_odd
@@ -796,45 +827,57 @@ def get_odd_even_odds(driver):
     time.sleep(5)
     xpath_all_odds = '//div/div/div/p'
 
-    all_elements = driver.find_elements(By.XPATH, xpath_all_odds)
+    try:
 
-    pos_average_word = -1
+        all_elements = driver.find_elements(By.XPATH, xpath_all_odds)
 
-    for i in range(0, len(all_elements)):
-        if all_elements[i].text == "Average": #because i get more things than what i need
-            pos_average_word = i
+        pos_average_word = -1
 
-    if pos_average_word >= 0:
-        all_elements = all_elements[:pos_average_word]
+        for i in range(0, len(all_elements)):
+            if all_elements[i].text == "Average": #because i get more things than what i need
+                pos_average_word = i
 
-    pattern = r'\b[1-9]\.[0-9][0-9]\b'
+        if pos_average_word >= 0:
+            all_elements = all_elements[:pos_average_word]
 
-    cnt = 0
+        pattern = r'\b[1-9]\.[0-9][0-9]\b'
 
-    odd_b = []
-    even = []
+        cnt = 0
 
-    for odd in all_elements:
-        odd_match = re.match(pattern, odd.text)
-        odd_match = odd_match.group() if odd_match else None
+        odd_b = []
+        even = []
 
-        if odd_match != None:
-            if cnt % 2 == 0:
-                odd_b.append(float(odd_match))
-            else:
-                even.append(float(odd_match))
-        cnt += 1
+        avg_odd_odd = 0
+        avg_even_odd = 0
 
-    avg_odd_odd = round(sum(odd_b) / len(odd_b), 2)
-    avg_even_odd = round(sum(even) / len(even), 2)
+        for odd in all_elements:
+            # print(f"odd = {odd.text}")
+            # print()
+            odd = odd.get_attribute("textContent").strip()
+            if odd != '-' and is_decimal_odd(odd) == True:
+                print(f"odd = {odd}")
+                if cnt % 2 == 0:
+                    odd_b.append(float(odd))
+                else:
+                    even.append(float(odd))
+            cnt += 1
 
-    odd_even_dict = {
-        "odd": avg_odd_odd,
-        "even": avg_even_odd
-    }
+        time.sleep(100)
+        if len(odd_b) > 0:
+            avg_odd_odd = round(sum(odd_b) / len(odd_b), 2)
+        
+        if len(even) > 0:
+            avg_even_odd = round(sum(even) / len(even), 2)
+
+        odd_even_dict = {
+            "odd": avg_odd_odd,
+            "even": avg_even_odd
+        }
 
 
-    return odd_even_dict
+        return odd_even_dict
+    except Exception as e:
+        print(f"get_odd_even odds error = {e}")
 
 def write_in_json(text):
     pass
