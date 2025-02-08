@@ -250,12 +250,15 @@ def get_match_info(driver, match):
     BET TYPE = Draw No Bet
     """
 
-    all_types_of_bets[2].click()
+    all_types_of_bets[1].click()
     # driver.execute_script("document.body.style.zoom='30%'")
 
 
-    ah = get_asian_handicap_odds(driver)
-    print(f"ah = {ah}")
+    # ah = get_asian_handicap_odds(driver)
+    # print(f"ah = {ah}")
+
+    ou = get_over_under_odds(driver)
+    print(f"ou = {ou}")
     time.sleep(100)
 
 
@@ -419,107 +422,58 @@ def get_1x2_odds(driver):
 
 
 def get_over_under_odds(driver):
-    driver.execute_script("document.body.style.zoom='10%'")
+    driver.execute_script("document.body.style.zoom='30%'")
     print("WE ARE IN OVER UNDER METHOD")
 
     time.sleep(5) #time to load the page
 
-    print("AAAAAAAAAAAAAAAAAAA")
-    return 'a'
+    xpath = '//div/div/div[contains(@class, "flex w-full items-center justify-start pl-3 font-bold text-[#2F2F2F]")]'
 
-    # xpath = '//div/div/div[contains(@class, "flex w-full items-center justify-start pl-3 font-bold text-[#2F2F2F]")]'
+    try:
+        all_elements = driver.find_elements(By.XPATH, xpath)
+        time.sleep(10)
 
-    # print("Before try!!!!!!!!!!!!!!!!")
-    # time.sleep(5)
+        #i need to create a dictionary where i put type_of_bet and it odds:
+        over_under_dict = {}
+        for o_u_type in all_elements:
+            print(f"element = {o_u_type.text}")
+            o_u_type.click() #clicked on o_u_type
+            xpath_odds = '//div/div/div/a[@data-v-10e18331]'
+            time.sleep(5)
+            find_all_odds = driver.find_elements(By.XPATH, xpath_odds)
 
-    # try:
-    #     all_elements = driver.find_elements(By.XPATH, xpath)
-    #     time.sleep(10)
+            over_odd = 0
+            over_odds_list = []
 
-    #     #i need to create a dictionary where i put type_of_bet and it odds:
-    #     over_under_dict = {}
-    #     for el in all_elements:
-    #         print(f"element = {e}")
-    #         if el.text is not None:
-    #             el.click()
-    #             xpath_odds = '//div/div/div/p[contains(@class, "height-content line-through")]'
-    #             find_all_odds_web_elements = driver.find_elements(By.XPATH, xpath_odds)
+            under_odd = 0
+            under_odds_list = []
 
-    #             i = 0
-    #             over_odd = 0
-    #             under_odd = 0
-    #             cnt = len(find_all_odds_web_elements) // 2
+            for i in range(len(find_all_odds)):
+                odd = find_all_odds[i].text
+                # print(f"ODD = {odd}")
+                # time.sleep(5)
+                if odd != '-':
+                    # print(f"ODD = {odd}")
+                    if i % 2 == 0:
+                        over_odds_list.append(float(odd))
+                    else:
+                        under_odds_list.append(float(odd))
 
-    #             for i in range(len(find_all_odds_web_elements)):
-    #                 if find_all_odds_web_elements[i].text != '-':
-    #                     odd = float(find_all_odds_web_elements[i].text)
-    #                     if i % 2 == 0:
-    #                         over_odd += odd
-    #                     else:
-    #                         under_odd += odd
+            if len(over_odds_list) > 0 and len(under_odds_list) > 0:
+                over_odd = round(sum(over_odds_list) / len(over_odds_list), 2)
+                under_odd = round(sum(under_odds_list) / len(under_odds_list), 2)
 
-    #             over_odd = over_odd / cnt
-    #             over_odd = round(over_odd, 2)
-    #             under_odd = under_odd / cnt
-    #             under_odd = round(under_odd, 2)
-                
-    #             if el.text not in over_under_dict:
-    #                 over_under_dict[el.text] = [over_odd, under_odd]
-                    
-                    
-    #             # el.click() #now i click on every category to display odds for it, but i do not get the odds with this, i need to do some extra work
-    #             el.click()
-    #             time.sleep(5)
-    #     over_under_dict = {key.split('\n')[0]: value for key, value in over_under_dict.items()}
-    #     return over_under_dict
+            if o_u_type.text not in over_under_dict:
+                over_under_dict[o_u_type.text] = [over_odd, under_odd]
+
+            time.sleep(2)
+            o_u_type.click()
         
-    # except Exception as e:
-    #     print(f"over under method err = {e}")
-
-
-# def get_asian_handicap_odds(driver):
-#     print("WE ARE IN ASIAN HANDICAP METHOD")
-#     print()
-#     driver.execute_script("document.body.style.zoom='20%'")
-
-#     time.sleep(5) #time to load the page
-
-#     xpath = '//div/div/div[contains(@class, "flex w-full items-center justify-start pl-3 font-bold text-[#2F2F2F]")]'
-    
-#     try:
-#         a_h_dict = {}
-#         all_elements = driver.find_elements(By.XPATH, xpath)
-
-#         for types_of_ah in all_elements:#those are types of ah... like -2.75 etc and we need to click on it to dropdown and actually get the odds
-#             print(f"AH TYPE = {types_of_ah.text}")
-#             if types_of_ah.text is not None:
-#                 types_of_ah.click() # to dropdown it
-#                 odd_xpath = '//div/div/div/p[contains(@class, "height-content line-through")]'
-#                 all_odds = driver.find_elements(By.XPATH, odd_xpath)
-#                 for odd in all_odds:
-#                     # if is_decimal_odd(float(odd.text)) == True:
-#                     print(f"ODD=  {odd.text}")
-#                         # time.sleep(5)
-#                 print()
-#                 print()
-
-#                 types_of_ah.click()
-#                 time.sleep(10)
+        over_under_dict = {key.split('\n')[0]: value for key, value in over_under_dict.items()}
+        return over_under_dict
         
-#         # a_h_dict = {key.split('\n')[0]: value for key, value in a_h_dict.items()}
-
-
-#         print(f"ah dict = {a_h_dict}")
-
-#         time.sleep(100)
-#         return a_h_dict
-
-#     except Exception as e:
-#         print(f"asian handicap error = {e}")
-
-
-
-
+    except Exception as e:
+        print(f"over under method err = {e}")
 
 def get_asian_handicap_odds(driver):
     time.sleep(5)
@@ -545,19 +499,7 @@ def get_asian_handicap_odds(driver):
                 # time.sleep(5)
                 find_all_odds_web_elements = driver.find_elements(By.XPATH, xpath_odds)
                 # time.sleep(3)
-                print(f"TYPE OF A_H = {el.text}")
 
-                """
-                
-                //*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[3]/div[2]/div[2]/div[1]/div[2]/div[3]/div/div/p
-
-                //*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[3]/div[3]/div[2]/div[1]/div[2]/div[3]/div/div/p
-
-                [@data-v-10e18331]
-
-                """
-
-                i = 0
                 home_odd = 0 #over become home
                 home_odds_list = []
                 away_odd = 0 #under become away
@@ -574,8 +516,9 @@ def get_asian_handicap_odds(driver):
 
                 # print(f"home list = {home_odds_list}")
                 # print(f"away list = {away_odds_list}")
-                home_odd = round(sum(home_odds_list) / len(home_odds_list), 2)
-                away_odd = round(sum(away_odds_list) / len(away_odds_list), 2)
+                if len(home_odd) > 0 and len(away_odd) > 0:
+                    home_odd = round(sum(home_odds_list) / len(home_odds_list), 2)
+                    away_odd = round(sum(away_odds_list) / len(away_odds_list), 2)
 
                 if el.text not in a_h_dict:
                     a_h_dict[el.text] = [home_odd, away_odd]
