@@ -7,6 +7,7 @@ from unidecode import unidecode
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import StaleElementReferenceException
+import json
 
 
 #I COULD USE A CLASS TO STORE country-leagues-matches-typeofbets BETTER... TO DO for later
@@ -110,8 +111,8 @@ def get_football_data():
                 get_matches = get_matches_info(driver,country_url,league_url)
 
            
-                for match in get_matches:
-                    print(f"MATCH = {match.text}")
+                # for match in get_matches:
+                #     print(f"MATCH = {match.text}")
  
                 league_results = get_matches[0]
                 league_standings = get_matches[1]
@@ -130,11 +131,13 @@ def get_football_data():
 
                 #get_matches[2] is the time when match starts
                 #so the matches start from get_matches[3]
+
                 for i in range (3, len(get_matches)):
                     match = get_matches[i]
-                    print(f" match = {match.text}")
+                    # print(f" match = {match.text}")
+                    match_name = match.text
                     match.click()
-                    get_match_info(driver, match)
+                    get_match_info(driver, match_name, country_text, league_text)
                     driver.back()
 
                 
@@ -195,12 +198,33 @@ def get_standings_info(driver, standings): #TO DO
 def get_results_info(driver, results):#TO DO
     pass #TO DO
 
-def get_match_info(driver, match):
+def get_match_info(driver, match_name, country_text, league_text):
 
     driver.execute_script("document.body.style.zoom='30%'")
+    time.sleep(3)
+
+    elements_of_match_name = match_name.split("\n")
+
+    match_time = elements_of_match_name[0]
+    match_home_team = elements_of_match_name[1]
+    match_away_team = elements_of_match_name[3]
+
+    date_xpath = '//*[@id="react-event-header"]/div/div/div/div/p'
+    date_find_elements = driver.find_elements(By.XPATH, date_xpath)
+    date_position = 1
+    date = date_find_elements[date_position].text.strip(",")
+    # print(f"match time = {match_time}")
+    # print(f"match home team = {match_home_team}")
+    # print(f"match away team = {match_away_team}")
 
     match_dict = {}
-
+    
+    match_dict["date"] = date
+    match_dict["country"] = country_text
+    match_dict["league"] = league_text
+    match_dict["time"] = match_time
+    match_dict["home_team"] = match_home_team
+    match_dict["away_team"] = match_away_team
 
 
     
@@ -208,14 +232,19 @@ def get_match_info(driver, match):
 
 
 
+    # print(f"date = {date}")
+
+
+    # time.sleep(1000)
+
+
 
     general_xpath = '//ul/li/span'
 
     all_types_of_bets = []
-    time.sleep(5)
 
     find_types = driver.find_elements(By.XPATH, general_xpath)
-    time.sleep(5)
+
 
     # print("ALL TYPES find_types")
     # match_dict = {}
@@ -242,86 +271,104 @@ def get_match_info(driver, match):
             
             bet_type = find_types[i]  #the updated element reference
             bet_type_text = bet_type.get_attribute("textContent").strip()
-            print(f"EL AFTER update = {bet_type_text}")
+            # print(f"EL AFTER update = {bet_type_text}")
             time.sleep(3)
             if bet_type_text == '1X2':
                 home_draw_away = get_1x2_odds(bet_type)
-                print(f"home_draw_away = {home_draw_away}")
-                print()
+                match_dict[bet_type_text] = home_draw_away
+                # print(f"home_draw_away = {home_draw_away}")
+                # print()
                 # time.sleep(5)
             if bet_type_text == "Over/Under":
                 # print("HEEREREREREREREREREREEREREREREREREREREREREERERERERERERERERERERERERE")
                 over_under = get_over_under_odds(driver)
-                print(f"over_under = {over_under}")
-                print()
+                match_dict[bet_type_text] = over_under
+                # print(f"over_under = {over_under}")
+                # print()
 
             if bet_type_text == "Asian Handicap":
                 asian_handicap = get_asian_handicap_odds(driver)
-                print(f"ah = {asian_handicap}")
-                print()
+                match_dict[bet_type_text] = asian_handicap
+                # print(f"ah = {asian_handicap}")
+                # print()
         
             if bet_type_text == "Both Teams to Score":
-                print(f"btts = {get_both_teams_to_score_odds(driver)}")
-                print()
+                btts = get_both_teams_to_score_odds(driver)
+                match_dict[bet_type_text] = btts
+                # print()
 
             if bet_type_text == "Double Chance":
                 double_chance = get_double_chance_odds(driver)
-                print(f"double chance = {double_chance}")
-                print()
+                match_dict[bet_type_text] = double_chance
+                # print(f"double chance = {double_chance}")
+                # print()
                 # time.sleep(5)
 
             if bet_type_text == "European Handicap":
                 european_handicap = get_european_handicap_odds(driver)
-                print(f"european handicap = {european_handicap}")
-                print()
+                match_dict[bet_type_text] = european_handicap
+                # print(f"european handicap = {european_handicap}")
+                # print()
 
             if bet_type_text == "Draw No Bet":
                 draw_no_bet = get_draw_no_bet_odds(driver)
-                print(f"draw no bet = {draw_no_bet}")
-                print()
+                match_dict[bet_type_text] = draw_no_bet
+                # print(f"draw no bet = {draw_no_bet}")
+                # print()
 
             if bet_type_text == "Correct Score":
                 correct_score = get_correct_score_odds(driver)
-                print(f"correct score = {correct_score}")
-                print()
+                match_dict[bet_type_text] = correct_score
+                # print(f"correct score = {correct_score}")
+                # print()
 
             if bet_type_text == "Half Time / Full Time" or bet_type.text == "Half Time/Full Time":
                 half_time_full_time = get_half_time_full_time_odds(driver)
-                print(f"ht/ft = {half_time_full_time}")
-                print()
+                match_dict[bet_type_text] = half_time_full_time
+                # print(f"ht/ft = {half_time_full_time}")
+                # print()
 
             if bet_type_text == "Odd or Even":
                 odd_or_even = get_odd_even_odds(driver)
-                print(f"odd or even = {odd_or_even}")
-                print()
+                match_dict[bet_type_text] = odd_or_even
+                # print(f"odd or even = {odd_or_even}")
+                # print()
             
             time.sleep(3)  # Add sleep if necessary
 
     except Exception as e:
         print(f"for error = {e}")
-    print('SDFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
         
    
 
     time_end = time.time()
 
     print(f"It took {time_end - time_start} to get all of this data")
-
-    time.sleep(100)
-
-
-
-
-
-
+    print()
+    print()
+    # print()
+    # print(f"match dict =")
+    # print(match_dict)
+    write_in_json(match_dict, country_text, league_text, date, match_time, match_home_team, match_away_team) #also can get them from dict in function 
 
 
+def write_in_json(match_dict, country_text, league_text, date, match_time, match_home_team, match_away_team):
+    json_object = json.dumps(match_dict, indent = 4)
+    match_time = match_time.replace(":", "")
+    json_file_name = date + "_" + country_text +"_" + league_text + "_" + match_time + "_" + match_home_team + "_" + match_away_team + ".json"
 
-    #     now we go through each type and try to retreive the odds:
-    
-    #     time.sleep(1000)
+
+    for key, value in match_dict.items():
+        print(f"{key}: {type(value)}")  # This helps identify if any value is a type instead of a real instance
+
+    json.dumps(match_dict)  # This is where the error occurs
+
+    time.sleep(10)
 
 
+
+    with open(json_file_name, "w") as f:
+        f.write(json_object)
 
 
 
@@ -334,7 +381,7 @@ def get_1x2_odds(driver):
     print()
     print()
     print()
-    # print("HELLO WE ARE INSIDE THE 1X2 METHOD")
+    # print("HELLO WE ARE INSIDE THE 1X2 METHDOD")
     # time.sleep(5)
     # //*[@id="app"]/div[1]/div[1]/div/main/div[3]/div[2]/div[3]/div/div/div/div/div/div/div/a
     xpath_all_odds = '//div/div/div/div/div/div/div/p'
@@ -684,7 +731,7 @@ def get_european_handicap_odds(driver):
 
                 for i in range(len(find_all_odds_web_elements)):
                     odd = find_all_odds_web_elements[i].get_attribute("textContent").strip()
-                    print(f"ODD = {odd}")
+                    # print(f"ODD = {odd}")
                     if find_all_odds_web_elements[i].text != '-':
                         if i % 3 == 0:
                             home_odds.append(float(odd))
@@ -911,8 +958,6 @@ def get_odd_even_odds(driver):
     except Exception as e:
         print(f"get_odd_even odds error = {e}")
 
-def write_in_json(text):
-    pass
 
 
 
