@@ -23,7 +23,7 @@ def get_football_countries():
     driver.get(SITE_FOOTBALL)
     driver.execute_script("document.body.style.zoom='10%'")
 
-    time.sleep(10)
+    time.sleep(5)
     try:
         #if i remove /div/div -> i also get the leagues, but also more stuff that i do not need;
         #if it looks like //div/div/a[...] i get only the countries
@@ -71,7 +71,7 @@ def get_football_data():
     for country in get_countries: #modify country string so i can add it to the xpath string
         country_to_url.append(transform_country_to_url(country.text))
 
-    for i in range (1, 5): #for it to can be clicked it needs to be "visible" - so my solution was to zoom out the page          #4,5 - for test on a few leagues
+    for i in range (3,8): #for it to can be clicked it needs to be "visible" - so my solution was to zoom out the page          #4,5 - for test on a few leagues
         country = get_countries[i] #webelement
         country_url = country_to_url[i]
 
@@ -84,6 +84,7 @@ def get_football_data():
 
         try:
             country.click()
+            driver.execute_script("document.body.style.zoom='25%'")
             time.sleep(3)
 
             xpath = '//li/a[contains(@href, "football/' + country_url + '/")]'
@@ -129,16 +130,17 @@ def get_football_data():
                 print("GET FOOTBALL DATA - get matches")
 
                 #get_matches[2] is the time when match starts
-                #so the matches start from get_matches[3]
+                #so the matches start from get_matches[4]
 
-                for i in range (3, len(get_matches)):
+                for i in range (4, len(get_matches)):
                     match = get_matches[i]
                     print(f" match = {match.text}")
                     match_name = match.text
                     # match.click()
                     driver.execute_script("window.open(arguments[0].href, '_blank');", match)
+                    time.sleep(5)
                     driver.switch_to.window(driver.window_handles[-1])
-
+                    time.sleep(5)
                     get_match_info(driver, match_name, country_text, league_text)
                     driver.close()
 
@@ -156,9 +158,6 @@ def get_football_data():
             country_leagues[country_text] = leagues
 
             
-
-
-            time.sleep(500)
             
             driver.back()
         except Exception as e:
@@ -216,11 +215,16 @@ def get_match_info(driver, match_name, country_text, league_text):
     driver.execute_script("document.body.style.zoom='30%'")
     time.sleep(3)
 
-    elements_of_match_name = match_name.split("\n")
+    elements_of_match_name = match_name.split("\n") #if the match is played, i also get the score here
+
+    team_regex = re.compile(r"\b[A-Za-z]+(?:[A-Za-z0-9\- ]*[A-Za-z0-9])?\b")
+
+# Extract only team names using regex
+    teams = [el for el in elements_of_match_name if team_regex.fullmatch(el)]
 
     match_time = elements_of_match_name[0]
-    match_home_team = elements_of_match_name[1]
-    match_away_team = elements_of_match_name[3]
+    match_home_team = teams[0]
+    match_away_team = teams[1]
 
     date_xpath = '//*[@id="react-event-header"]/div/div/div/div/p'
     date_find_elements = driver.find_elements(By.XPATH, date_xpath)
@@ -466,6 +470,10 @@ def get_1x2_odds(driver):
 
     print()
     print()
+
+    average_home_odd = 0
+    average_draw_odd = 0
+    average_away_odd = 0
     
     if len(home_odds) > 0:
         average_home_odd = round(sum(home_odds) / len(home_odds), 2)
@@ -528,6 +536,8 @@ def get_over_under_odds(driver):
                     else:
                         under_odds_list.append(float(odd))
 
+            over_odd = 0
+            under_odd = 0
             if len(over_odds_list) > 0 and len(under_odds_list) > 0:
                 over_odd = round(sum(over_odds_list) / len(over_odds_list), 2)
                 under_odd = round(sum(under_odds_list) / len(under_odds_list), 2)
@@ -586,8 +596,8 @@ def get_asian_handicap_odds(driver):
                         else:
                             away_odds_list.append(float(odd))
 
-                # print(f"home list = {home_odds_list}")
-                # print(f"away list = {away_odds_list}")
+                home_odd = 0
+                away_odd = 0
                 if len(home_odds_list) > 0 and len(away_odds_list) > 0:
                     home_odd = round(sum(home_odds_list) / len(home_odds_list), 2)
                     away_odd = round(sum(away_odds_list) / len(away_odds_list), 2)
@@ -635,6 +645,9 @@ def get_both_teams_to_score_odds(driver):
                 else:
                     no_list.append(float(odd))
 
+
+        yes_avg_odd = 0
+        no_avg_odd = 0
 
         if len(yes_list) > 0:
             yes_avg_odd = round(sum(yes_list) / len(yes_list), 2)
@@ -689,6 +702,11 @@ def get_double_chance_odds(driver):
             cnt += 1
 
         # time.sleep(5)
+
+        average_home_draw_odd = 0
+        average_home_away_odd = 0
+        average_draw_away_odd = 0
+
         if len(home_draw_odds) > 0:
             average_home_draw_odd = round( sum(home_draw_odds)/len(home_draw_odds), 2)
         
@@ -724,7 +742,7 @@ def get_european_handicap_odds(driver):
             if element.text is not None:
                 element.click()
                 cnt_drive_back += 1  # add when click to open the category odds
-                xpath_odds = '//div/div/div/p[contains(@class, "height-content line-through")]'
+                xpath_odds = '//div/div/div/div/div/div/p[@data-v-10e18331]'
                 find_all_odds_web_elements = driver.find_elements(By.XPATH, xpath_odds)
 
                 home_odds = []
@@ -742,6 +760,10 @@ def get_european_handicap_odds(driver):
                         if i % 3 == 2:
                             away_odds.append(float(odd))
 
+
+                avg_home_odd = 0
+                avg_draw_odd = 0
+                avg_away_odd = 0
                 if len(home_odds) > 0:
                     avg_home_odd = round(sum(home_odds)/len(home_odds), 2)
                 
@@ -807,6 +829,9 @@ def get_draw_no_bet_odds(driver):
         cnt += 1
     # time.sleep(100)
 
+    home_odd = 0
+    away_odd = 0
+
     if len(home_list) > 0:
         home_odd = round(sum(home_list) / len(home_list) , 2)
 
@@ -832,21 +857,30 @@ def get_correct_score_odds(driver):
 
         cs_dict = {}
 
+
         for el in all_elements:
             el.click()# opens the score
             cnt_drive_back += 1  # add when click to open the category odds
-            xpath_odds = '//div/div/div/p[contains(@class, "height-content line-through")]'
+            xpath_odds = '//div/div/div/div/div/div/p[@data-v-10e18331]'
+
             find_all_odds_web_elements = driver.find_elements(By.XPATH, xpath_odds)
 
             odds_list = []
 
             for odd in find_all_odds_web_elements:
                 odd = odd.get_attribute("textContent").strip()
+                print(f"odd = {odd}")
                 if odd != '-':
                     odds_list.append(float(odd))
 
+            print(f"odds list = {odds_list}")
+            time.sleep(2)
+
+            avg_odd = 0
             if len(odds_list) > 0:
                 avg_odd = round(sum(odds_list) / len(odds_list), 2)
+
+            print(f"odd for {el.text} is {avg_odd}")
 
             if el.text is not None:
                 if el.text not in cs_dict:
@@ -887,6 +921,8 @@ def get_half_time_full_time_odds(driver):
                 odd = odd.get_attribute("textContent").strip()
                 if odd != '-':
                     odds.append(float(odd))
+
+            avg_odd = 0
 
             if len(odds) > 0:
                 avg_odd = round(sum(odds) / len(odds) , 2)
@@ -954,6 +990,8 @@ def get_odd_even_odds(driver):
                     even.append(float(odd))
             cnt += 1
 
+        avg_odd_odd = 0
+        avg_even_odd = 0
         # time.sleep(100)
         if len(odd_b) > 0:
             avg_odd_odd = round(sum(odd_b) / len(odd_b), 2)
