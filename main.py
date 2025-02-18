@@ -21,7 +21,7 @@ SITE_FOOTBALL = "https://www.oddsportal.com/football/"
 def get_football_countries():
     driver = webdriver.Chrome() #chrome webdriver
     driver.get(SITE_FOOTBALL)
-    driver.execute_script("document.body.style.zoom='10%'")
+    driver.execute_script("document.body.style.zoom='1%'")
 
     time.sleep(5)
     try:
